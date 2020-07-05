@@ -146,7 +146,7 @@ int main(int, char**)
 					std::string text;
 					while (meta_len --)
 						text += char(track[trk][ptr++]);
-					std::cout << "text: " << text << std::endl;
+					std::cout << "Text: " << text << std::endl;
 				}break;
 
 				case 0x02:{
