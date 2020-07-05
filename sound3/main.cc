@@ -133,6 +133,7 @@ int main(int, char**)
 			unsigned meta_type = track[trk][ptr++];
 			unsigned meta_len = track[trk][ptr++];
 			switch (meta_type) {
+
 				case 0x00:{
 					uint16_t seqnum = 0;
 					seqnum += track[trk][ptr++] * 0x100U;
@@ -141,17 +142,77 @@ int main(int, char**)
 					std::dec << seqnum << std::hex << std::endl;
 				}break;
 
-				case 0x03:{
-					std::string name;
+				case 0x01:{
+					std::string text;
 					while (meta_len --)
-						name += char(track[trk][ptr++]);
-					std::cout << "Track Name: " << name << std::endl;
+						text += char(track[trk][ptr++]);
+					std::cout << "text: " << text << std::endl;
+				}break;
+
+				case 0x02:{
+					std::string copyright;
+					while (meta_len --)
+						copyright += char(track[trk][ptr++]);
+					std::cout << "Copyright Notice: " << copyright << std::endl;
+				}break;
+
+				case 0x03:{
+					std::string trackname;
+					while (meta_len --)
+						trackname += char(track[trk][ptr++]);
+					std::cout << "Track Name: " << trackname << std::endl;
+				}break;
+
+				case 0x04:{
+					std::string InstrumentName;
+					while (meta_len --)
+						InstrumentName += char(track[trk][ptr++]);
+					std::cout << "Instrument Name: " << InstrumentName << std::endl;
+				}break;
+
+				case 0x05:{
+					std::string lyric;
+					while (meta_len --)
+						lyric += char(track[trk][ptr++]);
+					std::cout << "lyric: " << lyric << std::endl;
+				}break;
+
+				case 0x06:{
+					std::string Marker;
+					while (meta_len --)
+						Marker += char(track[trk][ptr++]);
+					std::cout << "Marker: " << Marker << std::endl;
+				}break;
+
+				case 0x07:{
+					std::string CuePoint;
+					while (meta_len --)
+						CuePoint += char(track[trk][ptr++]);
+					std::cout << "Cue Point: " << CuePoint << std::endl;
+				}break;
+
+				case 0x20:{
+					unsigned Mprefix;
+					Mprefix = track[trk][ptr++];
+					std::cout << "MIDI Channel Prefix: " << Mprefix << std::endl;
 				}break;
 
 				case 0x51:{
 					unsigned temp = track[trk][ptr++];
 					for(int i=0;i<2;i++){ temp = (temp << 8) | (track[trk][ptr++]);}
 					std::cout << "Set Tempo: " << temp << " microseconds per MIDI quarter-note" << std::endl;
+				}break;
+
+				case 0x54:{
+					unsigned hr = track[trk][ptr++];
+					unsigned mn = track[trk][ptr++];
+					unsigned se = track[trk][ptr++];
+					unsigned fr = track[trk][ptr++];
+					std::cout << "SMPTE Offset: "
+							<< " hr: " << hr
+							<< " mn: " << mn
+							<< " se: " << se
+							<< " fr: " << fr << std::endl;
 				}break;
 
 				case 0x58:{
@@ -162,7 +223,19 @@ int main(int, char**)
 					std::cout << "Размер " << nn << "/" << dd
 							<< ", колличество тиков в ударе метронома " << num_tick
 							<< ", колличество 32-х долей в " << num_tick << " тиках " << num_part << std::endl;
+				}break;
 
+				case 0x59:{
+					unsigned sf, me;
+					sf = track[trk][ptr++];
+					me = track[trk][ptr++];
+					std::cout << "Key Signature:"
+							<< " sf: " << sf
+							<< " me: " << me << std::endl;
+				}break;
+
+				case 0x7f:{
+					std::cout << "Sequencer Specific Meta-Event" << std::endl;
 				}break;
 
 				case 0x2f:
@@ -198,7 +271,11 @@ int main(int, char**)
 			}break;
 
 			case 0xa0 ... 0xaf:{
-
+				unsigned num, value;
+				num = track[trk][ptr++];
+				value = track[trk][ptr++];
+				std::cout << "key number: " << num
+						<< " Value: " << value << std::endl;
 			}break;
 
 			case 0xb0 ... 0xbf:{
@@ -231,16 +308,58 @@ int main(int, char**)
 						std::setw(2) << pitchWheel << std::endl;
 			}break;
 
+			case 0xf0:{
+				std::cout << "System Exclusive" << std::endl;
+				while(event_type!=0xf7)
+					event_type = track[trk][ptr++];
+				std::cout << "End of exclusive" << std::endl;
+			}break;
+
+			case 0xf2:{
+				unsigned lsb, msb;
+				lsb = track[trk][ptr++];
+				msb = track[trk][ptr++];
+				std::cout << "Song Position Pointer:"
+						<< " LSB: " << lsb
+						<< " MSB: " << msb << std::endl;
+			}break;
+
+			case 0xf3:{
+				unsigned songselect;
+				songselect = track[trk][ptr++];
+				std::cout << "Song Select: " << songselect << std::endl;
+			}break;
+
+			case 0xf6:{
+				std::cout << "Tune Request" << std::endl;
+			}break;
+
+			case 0xf8:{
+				std::cout << "Timing Clock" << std::endl;
+			}break;
+
+			case 0xfa:{
+				std::cout << "Start current sequence" << std::endl;
+			}break;
+
+			case 0xfb:{
+				std::cout << "Continue sequence" << std::endl;
+			}break;
+
+			case 0xfc:{
+				std::cout << "Stop current sequence." << std::endl;
+			}break;
+
+			case 0xfe:{
+				std::cout << "Active Sensing" << std::endl;
+			}break;
+
 			default:
 				std::cout << "неизвестное событие " <<
 				std::setw(2) << event_type << std::endl;
 				return 1;
-
 		}
-
 	file.close();
-
 	}
-
 	return 0;
 }
